@@ -2,12 +2,13 @@ const CACHE_NAME = 'lostnfound-cache-v1';
 
 // Files to cache
 const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
+  '/ReClaim/main/',
+  '/ReClaim/main/index.html',
+  '/ReClaim/main/manifest.json',
+  '/ReClaim/main/icons/icon-192.png',
+  '/ReClaim/main/icons/icon-512.png'
 ];
+
 
 self.addEventListener('install', event => {
   event.waitUntil(
