@@ -1159,6 +1159,34 @@
 
     // Call this function when the page loads
     checkLoginStatus();
+
+let deferredPrompt;
+const downloadBtn = document.querySelector('.hero-buttons .btn-primary');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent Chrome from showing its default prompt
+  e.preventDefault();
+  deferredPrompt = e;
+  // Make the download button visible if it was hidden
+  downloadBtn.style.display = 'inline-block';
+});
+
+downloadBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt(); // Show the install prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    } else {
+      console.log('User dismissed the install prompt');
+    }
+    deferredPrompt = null; // Clear it
+  } else {
+    alert('Install option not available on this device');
+  }
+});
+
 </script>
 </body>
+
 </html>
