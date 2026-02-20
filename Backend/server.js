@@ -1,62 +1,49 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const path = require('path');
 require('dotenv').config();
 
 const app = express();
 
-// Middleware
+// 1. Pure API Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.static('.')); // Serve from current directory
+app.use(express.json()); // Essential for reading JSON from requests
 
-// Database connection with better error handling
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/lostnfound', {
+// 2. Database Connection
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log('MongoDB connected successfully'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// Import routes
+// 3. Import & Use API Routes
 const authRoutes = require('./routes/auth');
 const itemRoutes = require('./routes/items');
 
-// Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/items', itemRoutes);
 
-// Basic route to test server
+// 4. API Status Endpoint (Root)
+app.get('/', (req, res) => {
+    res.json({ success: true, message: 'Backend API is Live' });
+});
+
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Server is working!' });
 });
 
-// Serve frontend pages
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../index.html'));
-});
-
-app.get('/secpg.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../secpg.html'));
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-    console.error('Server error:', error);
+// 5. Global Error Handler (Always returns JSON)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
     res.status(500).json({ 
-        message: 'Something went wrong!',
-        error: error.message 
+        success: false, 
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'production' ? null : err.message
     });
 });
 
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
-});
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Test server: http://localhost:${PORT}/api/test`);
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`API running on port ${PORT}`);
 });
